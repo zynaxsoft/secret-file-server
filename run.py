@@ -1,16 +1,19 @@
-from flask import Flask, request, send_from_directory, make_response
-
 import datetime
+import os
+
+from flask import Flask, request, send_from_directory, make_response
 
 
 app = Flask(__name__, static_url_path='')
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 
-FILE_NAME = 'some_file_to_serve'
-SECRET_PATH = 'secret_path'  # localhost/secret_path to get the file
-MY_SECRET = 'some_secret'  # secret to enter in the query variable "key"
-# localhost/secret_path?key=some_secret
+FILE_NAME = os.environ.get('SS_FILE_NAME', 'some_file_to_serve')
+# localhost/secret_path to get the file
+SECRET_PATH = os.environ.get('SS_SECRET_PATH', 'secret_path')
+# secret to enter in the query variable "key"
+MY_SECRET = os.environ.get('SS_MY_SECRET', 'some_secret')
+MAX_DOWNLOAD = os.environ.get('SS_MAX_DOWNLOAD', 1)
 
 
 global counter
@@ -21,7 +24,7 @@ counter = 0
 def download(path):
     global counter
     if path == SECRET_PATH and request.args.get('key') == MY_SECRET:
-        if counter > 0:
+        if counter > MAX_DOWNLOAD - 1:
             return 'Link expired.'
         counter += 1
         with open('downloaded', 'a') as f:
